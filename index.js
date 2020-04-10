@@ -45,6 +45,7 @@ server.post('/projetos', (req, res) => {
   return res.json(projeto);
 });
 
+// Middleware log no nº de requisições
 function logRequests(req, res, next) {
 
   console.count("Número de requisições");
@@ -52,14 +53,45 @@ function logRequests(req, res, next) {
   return next();
 }
 
+server.use(logRequests)
 
-server.get('/projetos/:id', (req, res) => {
-  const { index } = req.params;
+// alterar dados
+server.put('/projetos/:id', checkProjetosExistentes, (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
 
-  return res.json(projetos[id]);
+  const projeto = projetos.find(p => p.id == id);
+
+  projeto.title = title;
+
+  return res.json(projeto);
 });
 
 server.get('/projetos/')
+
+server.delete('/projetos/:id', checkProjetosExistentes, (req, res) => {
+  const { id } = req.params;
+
+  const projetoIndex = projetos.findIndex(p => p.id == id);
+
+  projetos.splice(projetoIndex, 1);
+
+  return res.send();
+});
+
+//Criando nova tarefa no proejto a partir da id.
+
+server.post ('/projetos/:id/tasks', checkProjetosExistentes, (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+
+  const projeto = projetos.find(p => p.id == id);
+
+  projetos.tasks.push(title);
+    
+    return res.json(projeto);
+
+});
 
 const porta = 3000
 
